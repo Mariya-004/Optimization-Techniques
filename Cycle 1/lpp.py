@@ -18,8 +18,8 @@ x_bounds = (0, None)  # u1 >= 0
 y_bounds = (0, None)  # u2 >= 0
 z_bounds = (0, None)  # u3 >= 0
 
-# Solve the linear program
-result = linprog(c, A_ub=A, b_ub=b, bounds=[x_bounds, y_bounds, z_bounds], method='highs')
+# Solve the linear program using the simplex method
+result = linprog(c, A_ub=A, b_ub=b, bounds=[x_bounds, y_bounds, z_bounds], method='simplex')
 
 # Check if the optimization was successful
 if result.success:
