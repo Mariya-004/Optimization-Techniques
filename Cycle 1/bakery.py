@@ -1,7 +1,6 @@
 from scipy.optimize import linprog
 
-# Coefficients of the objective function (maximize revenue)
-# We use negative because linprog minimizes by default
+
 c = [-5, -3]  # Revenue: 5 per chocolate cake, 3 per vanilla cake
 
 # Coefficients for the inequality constraints
