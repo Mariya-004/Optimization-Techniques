@@ -68,12 +68,12 @@ def vogel_approximation_method(supply, demand, costs):
     return transportation_plan, total_cost
 
 # Example usage
-supply = np.array([20, 30, 25])
-demand = np.array([10, 30, 35])
+supply = np.array([300, 400, 500])
+demand = np.array([250, 350, 400, 200])
 costs = np.array([
-    [8, 6, 10],
-    [9, 7, 4],
-    [3, 4, 2]
+    [3, 1, 7, 4],
+    [2, 6, 5, 9],
+    [8, 3, 3, 2]
 ])
 
 plan, cost = vogel_approximation_method(supply, demand, costs)
