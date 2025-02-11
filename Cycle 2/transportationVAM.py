@@ -1,31 +1,69 @@
 import numpy as np
 
 def vogel_approximation_method(supply, demand, costs):
+    # Convert costs to float to handle np.inf assignments
+    costs = costs.astype(float)
     transportation_plan = np.zeros_like(costs)
     total_cost = 0
 
-    while np.sum(supply) > 0 and np.sum(demand) > 0:
-        row_penalties = [sorted(row)[:2] for row in costs]
-        col_penalties = [sorted(costs[:, c])[:2] for c in range(costs.shape[1])]
+    # Keep track of remaining supply and demand
+    remaining_supply = supply.copy()
+    remaining_demand = demand.copy()
 
-        max_row_penalty = max(map(lambda x: x[1] - x[0], row_penalties))
-        max_col_penalty = max(map(lambda x: x[1] - x[0], col_penalties))
+    while np.sum(remaining_supply) > 0 and np.sum(remaining_demand) > 0:
+        # Calculate row and column penalties
+        row_penalties = []
+        col_penalties = []
+
+        # Calculate row penalties
+        for i in range(costs.shape[0]):
+            if remaining_supply[i] > 0:
+                row_cost = costs[i, :]
+                valid_cost = sorted([cost for cost in row_cost if cost != np.inf])
+                if len(valid_cost) > 1:
+                    row_penalties.append(valid_cost[1] - valid_cost[0])
+                else:
+                    row_penalties.append(0)
+            else:
+                row_penalties.append(-1)  # Mark as exhausted
+
+        # Calculate column penalties
+        for j in range(costs.shape[1]):
+            if remaining_demand[j] > 0:
+                col_cost = costs[:, j]
+                valid_cost = sorted([cost for cost in col_cost if cost != np.inf])
+                if len(valid_cost) > 1:
+                    col_penalties.append(valid_cost[1] - valid_cost[0])
+                else:
+                    col_penalties.append(0)
+            else:
+                col_penalties.append(-1)  # Mark as exhausted
+
+        # Determine whether to consider row or column penalty
+        max_row_penalty = max([penalty for penalty in row_penalties if penalty >= 0], default=-1)
+        max_col_penalty = max([penalty for penalty in col_penalties if penalty >= 0], default=-1)
 
         if max_row_penalty >= max_col_penalty:
-            row_idx = row_penalties.index(max(row_penalties, key=lambda x: x[1] - x[0]))
-            col_idx = np.argmin(costs[row_idx])
+            row_idx = row_penalties.index(max_row_penalty)
+            col_idx = np.argmin(costs[row_idx, :])  # Choose the lowest cost in the row
         else:
-            col_idx = col_penalties.index(max(col_penalties, key=lambda x: x[1] - x[0]))
-            row_idx = np.argmin(costs[:, col_idx])
+            col_idx = col_penalties.index(max_col_penalty)
+            row_idx = np.argmin(costs[:, col_idx])  # Choose the lowest cost in the column
 
-        allocated = min(supply[row_idx], demand[col_idx])
-        supply[row_idx] -= allocated
-        demand[col_idx] -= allocated
+        # Allocate the supply and demand
+        allocated = min(remaining_supply[row_idx], remaining_demand[col_idx])
         transportation_plan[row_idx, col_idx] = allocated
         total_cost += allocated * costs[row_idx, col_idx]
 
-        costs[row_idx, :] = float('inf') if supply[row_idx] == 0 else costs[row_idx, :]
-        costs[:, col_idx] = float('inf') if demand[col_idx] == 0 else costs[:, col_idx]
+        # Update supply and demand
+        remaining_supply[row_idx] -= allocated
+        remaining_demand[col_idx] -= allocated
+
+        # Mark exhausted rows and columns as np.inf
+        if remaining_supply[row_idx] == 0:
+            costs[row_idx, :] = np.inf
+        if remaining_demand[col_idx] == 0:
+            costs[:, col_idx] = np.inf
 
     return transportation_plan, total_cost
 
